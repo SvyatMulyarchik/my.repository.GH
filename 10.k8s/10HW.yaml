@@ -1,0 +1,31 @@
+name: Check pods
+
+on:
+  workflow_dispatch
+
+jobs:
+  build:
+    name: Check pods kubectl
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Connect to k3s host
+      run: |
+        mkdir ~/.ssh
+        eval `ssh-agent -s`
+        ssh-add - <<< "${{ secrets.SSH_KEY }}" 
+        ssh-keyscan -H ${{ secrets.BASTION }} >> ~/.ssh/known_hosts
+        ssh ${{ secrets.BASTION_USER }}@${{ secrets.BASTION }} ssh-keyscan ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+        ssh -o ProxyCommand="ssh -W %h:%p ${{ secrets.BASTION_USER }}@${{ secrets.BASTION_HOST }}" ${{ secrets.HOST_USER }}@${{ secrets.HOST }} \
+        kubectl get pods -A > report.log
+
+    - name: check pods
+      id: check-pods
+      run: |
+        echo "pods-failed=$(cat report.log | grep -v Running | wc -l)" >> $GITHUB_OUTPUT
+
+    - name: upload report
+      if: steps.check-pods.outputs.pods-failed-count > 1
+      uses: actions/upload-artifact@v3
+      with:
+        path: report.log
