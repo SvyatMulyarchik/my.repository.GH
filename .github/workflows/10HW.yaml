@@ -25,6 +25,7 @@ jobs:
         echo "pods-failed=$(cat report.log | grep -v Running | wc -l)" >> $GITHUB_OUTPUT
 
     - name: Check crashed pod's list
+      if: steps.check-pods.outputs.pods-failed-count > 1
       uses: actions/upload-artifact@v3
       with:
         path: report.log
@@ -35,6 +36,8 @@ jobs:
       env:
         SLACK_CHANEL: SvyatApp
         SLACK_COLOR: '#FF0000'
+        SLACK_ICON: https://github.com/rtCamp.png?size=48
+        SLACK_MESSAGE: 'There are creshed pods'
         SLACK_TITLE: 'Crashed pods'
         SLACK_USERNAME: rtCamp
         SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
