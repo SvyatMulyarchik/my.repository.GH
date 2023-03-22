@@ -25,7 +25,6 @@ jobs:
         echo "pods-failed=$(cat report.log | grep -v Running | wc -l)" >> $GITHUB_OUTPUT
 
     - name: upload report
-      if: steps.check-pods.outputs.pods-failed-count > 1
       uses: actions/upload-artifact@v3
       with:
         path: report.log
