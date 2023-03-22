@@ -25,14 +25,12 @@ jobs:
         echo "pods-failed=$(cat report.log | grep -v Running | wc -l)" >> $GITHUB_OUTPUT
 
     - name: Check crashed pod's list
-      if: steps.check-pods.outputs.pods-failed-count > 1
       uses: actions/upload-artifact@v3
       with:
         path: report.log
 
     - name: Slack notification
       uses: rtCamp/action-slack-notify@v2
-      if: steps.check-pods.outputs.pods-failed-count > 1
       env:
         SLACK_CHANEL: SvyatApp
         SLACK_COLOR: '#FF0000'
